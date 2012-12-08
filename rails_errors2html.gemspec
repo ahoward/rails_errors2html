@@ -3,7 +3,7 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_errors2html"
-  spec.version = "1.2.0"
+  spec.version = "1.3.0"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_errors2html"
   spec.description = "<%= form_for @post do %>  <%= @post.errors.to_html %>"
@@ -24,6 +24,8 @@ Gem::Specification::new do |spec|
 
   spec.test_files = nil
 
+  
+    spec.add_dependency(*["fattr", " >= 2.2.1"])
   
     spec.add_dependency(*["map", " >= 6.2.0"])
   

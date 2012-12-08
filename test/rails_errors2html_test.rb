@@ -43,7 +43,7 @@ Testing Errors2Html do
     errors.set '*', 'error on base'
     errors.set 'field', 'error on field'
     errors.set 'a', 'b', 'c', %w'one two three'
-    errors.extend(Errors2Html)
+    errors.extend(Errors2Html::Mixin)
 
     expected = <<-__
       <div class="errors2html errors-summary">

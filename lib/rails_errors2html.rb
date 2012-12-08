@@ -1,5 +1,5 @@
 module Errors2Html
-  VERSION = '1.2.0'
+  VERSION = '1.3.0'
 
   def Errors2Html.version
     Errors2Html::VERSION
@@ -7,8 +7,9 @@ module Errors2Html
 
   def Errors2Html.dependencies
     {
-      'map' => [ 'map'           , ' >= 6.2.0' ],
-      'rails_view' => [ 'rails_view'           , ' >= 1.0.1' ]
+      'fattr'      => [ 'fattr'         , ' >= 2.2.1' ],
+      'map'        => [ 'map'           , ' >= 6.2.0' ],
+      'rails_view' => [ 'rails_view'    , ' >= 1.0.1' ]
     }
   end
     
@@ -23,34 +24,15 @@ module Errors2Html
     require(lib)
   end
 
-  class << Errors2Html
-    attr_accessor :template
-  end
-
-  class Errors < ::Hash
-    def initialize(hash = {})
-      update(hash)
-    ensure
-      self[:global] ||= []
-      self[:fields] ||= Hash.new{|h,k| h[k] = []}
-    end
-
-    def global
-      fetch(:global)
-    end
-
-    def fields
-      fetch(:fields)
-    end
-  end
-
   def Errors2Html.to_html(*args)
     args.flatten!
     args.compact!
 
     at_least_one_error = false
 
-    errors = Errors.new
+    errors = Map.new
+    errors[:global] = []
+    errors[:fields] = {} 
 
     args.each do |e|
       flatten(e).each do |key, messages|
@@ -60,7 +42,7 @@ module Errors2Html
           if Array(key).join =~ /\A(?:[*]|base)\Z/iomx
             errors.global.push(message.to_s).uniq!
           else
-            errors.fields[key].push(message.to_s).uniq!
+            (errors.fields[key] ||= []).push(message.to_s).uniq!
           end
         end
       end
@@ -77,7 +59,7 @@ module Errors2Html
     if template
       View.render(:template => template, :locals => locals)
     else
-      View.render(:inline => Template, :locals => locals)
+      View.render(:inline => inline, :locals => locals)
     end
   end
 
@@ -95,51 +77,66 @@ module Errors2Html
     end
   end
 
-  def to_html
-    Errors2Html.to_html(self)
-  end
+  Fattr(:inline) do
+    <<-erb
+      <div class="errors2html errors-summary">
+        <h4 class="errors-caption">Sorry, we encountered some errors:</h4>
 
-  def to_s
-    to_html
-  end
+        <% unless errors.global.empty?  %>
 
-  Template = <<-erb
-    <div class="errors2html errors-summary">
-      <h4 class="errors-caption">Sorry, we encountered some errors:</h4>
-
-      <% unless errors.global.empty?  %>
-
-        <ul class="errors-global-list">
-          <% errors.global.each do |message| %>
-            <li class="errors-message">
-              <%= message %>
-            </li>
-          <% end %>
-        </ul>
-      <% end %>
-
-      <% unless errors.fields.empty?  %>
-
-        <dl class="errors-fields-list">
-          <% 
-            errors.fields.each do |key, messages|
-              title = Array(key).join(" ").titleize
-          %>
-            <dt class="errors-title">
-              <%= title %>
-            </dt>
-            <% Array(messages).each do |message| %>
-              <dd class="errors-message">
+          <ul class="errors-global-list">
+            <% errors.global.each do |message| %>
+              <li class="errors-message">
                 <%= message %>
-              </dd>
-
+              </li>
             <% end %>
-          <% end %>
-        </dl>
-      <% end %>
-    </div>
-  erb
+          </ul>
+        <% end %>
+
+        <% unless errors.fields.empty?  %>
+
+          <dl class="errors-fields-list">
+            <% 
+              errors.fields.each do |key, messages|
+                title = Array(key).join(" ").titleize
+            %>
+              <dt class="errors-title">
+                <%= title %>
+              </dt>
+              <% Array(messages).each do |message| %>
+                <dd class="errors-message">
+                  <%= message %>
+                </dd>
+
+              <% end %>
+            <% end %>
+          </dl>
+        <% end %>
+      </div>
+    erb
+  end
+
+  Fattr(:template){ nil }
+
+  module Mixin
+    def to_html
+      ::Errors2Html.to_html(self)
+    end
+
+    def to_s
+      to_html
+    end
+  end
 end
 
-require 'active_model' unless defined?(ActiveModel)
-ActiveModel::Errors.send(:include, Errors2Html)
+##
+#
+  require 'active_model' unless defined?(ActiveModel)
+
+  ActiveModel::Errors.send(:include, Errors2Html::Mixin)
+
+  ActiveModel::Errors.class_eval do
+    def inspect(*args, &block)
+      to_hash.inspect(*args, &block)
+    end
+  end
