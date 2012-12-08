@@ -1,5 +1,5 @@
 module Errors2Html
-  VERSION = '1.0.0'
+  VERSION = '1.0.1'
 
   def Errors2Html.version
     Errors2Html::VERSION

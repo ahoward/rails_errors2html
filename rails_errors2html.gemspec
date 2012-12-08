@@ -13,6 +13,7 @@ Gem::Specification::new do |spec|
  "Rakefile",
  "lib",
  "lib/rails_errors2html.rb",
+ "rails_errors2html.gemspec",
  "test",
  "test/rails_errors2html_test.rb",
  "test/testing.rb"]
