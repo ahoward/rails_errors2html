@@ -3,7 +3,7 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_errors2html"
-  spec.version = "1.0.0"
+  spec.version = "1.2.0"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_errors2html"
   spec.description = "<%= form_for @post do %>  <%= @post.errors.to_html %>"

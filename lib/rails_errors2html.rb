@@ -1,5 +1,5 @@
 module Errors2Html
-  VERSION = '1.0.1'
+  VERSION = '1.2.0'
 
   def Errors2Html.version
     Errors2Html::VERSION
@@ -27,31 +27,41 @@ module Errors2Html
     attr_accessor :template
   end
 
+  class Errors < ::Hash
+    def initialize(hash = {})
+      update(hash)
+    ensure
+      self[:global] ||= []
+      self[:fields] ||= Hash.new{|h,k| h[k] = []}
+    end
+
+    def global
+      fetch(:global)
+    end
+
+    def fields
+      fetch(:fields)
+    end
+  end
+
   def Errors2Html.to_html(*args)
     args.flatten!
     args.compact!
 
     at_least_one_error = false
 
-    errors = Map.new
-    errors[:global] = []
-    errors[:fields] = {}
+    errors = Errors.new
 
     args.each do |e|
-      e.each do |key, messages|
-        key = key.to_s
-
+      flatten(e).each do |key, messages|
         Array(messages).each do |message|
           at_least_one_error = true
 
-          list =
-            if key =~ /\A(?:[*]|base)\Z/iomx
-              errors[:global] ||= []
-            else
-              errors[:fields][key] ||= []
-            end
-
-          list.push(message.to_s).uniq!
+          if Array(key).join =~ /\A(?:[*]|base)\Z/iomx
+            errors.global.push(message.to_s).uniq!
+          else
+            errors.fields[key].push(message.to_s).uniq!
+          end
         end
       end
     end
@@ -71,6 +81,20 @@ module Errors2Html
     end
   end
 
+  def Errors2Html.flatten(hashlike)
+    case hashlike
+      when Map
+        hash = Hash.new
+        hashlike.depth_first_each do |key, value|
+          index = key.pop if key.last.is_a?(Integer)
+          (hash[key] ||= []).push(value)
+        end
+        hash
+      else
+        hashlike.respond_to?(:to_hash) ? hashlike.to_hash : hashlike
+    end
+  end
+
   def to_html
     Errors2Html.to_html(self)
   end
@@ -84,6 +108,7 @@ module Errors2Html
       <h4 class="errors-caption">Sorry, we encountered some errors:</h4>
 
       <% unless errors.global.empty?  %>
+
         <ul class="errors-global-list">
           <% errors.global.each do |message| %>
             <li class="errors-message">
@@ -94,6 +119,7 @@ module Errors2Html
       <% end %>
 
       <% unless errors.fields.empty?  %>
+
         <dl class="errors-fields-list">
           <% 
             errors.fields.each do |key, messages|
@@ -102,11 +128,11 @@ module Errors2Html
             <dt class="errors-title">
               <%= title %>
             </dt>
-
             <% Array(messages).each do |message| %>
               <dd class="errors-message">
                 <%= message %>
               </dd>
+
             <% end %>
           <% end %>
         </dl>
@@ -117,4 +143,3 @@ end
 
 require 'active_model' unless defined?(ActiveModel)
 ActiveModel::Errors.send(:include, Errors2Html)
-
