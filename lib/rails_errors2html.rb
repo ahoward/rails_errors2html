@@ -1,5 +1,5 @@
 module Errors2Html
-  VERSION = '1.4.0'
+  VERSION = '1.4.1'
 
   def Errors2Html.version
     Errors2Html::VERSION
@@ -139,6 +139,10 @@ end
 
 ##
 #
+  Errors2HTML = Errors2Html
+
+##
+#
   require 'active_model' unless defined?(ActiveModel)
 
   ActiveModel::Errors.send(:include, Errors2Html::Mixin)
@@ -148,3 +152,4 @@ end
       to_hash.inspect(*args, &block)
     end
   end
+
