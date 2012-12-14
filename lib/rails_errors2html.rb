@@ -1,5 +1,5 @@
 module Errors2Html
-  VERSION = '1.3.0'
+  VERSION = '1.4.0'
 
   def Errors2Html.version
     Errors2Html::VERSION
@@ -25,6 +25,14 @@ module Errors2Html
   end
 
   def Errors2Html.to_html(*args)
+    if args.size == 1
+      case args.first
+        when Array, String, Symbol
+          messages = Array(args.first)
+          args = [{:base => messages}]
+      end
+    end
+
     args.flatten!
     args.compact!
 
