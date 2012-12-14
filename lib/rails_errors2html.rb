@@ -1,5 +1,5 @@
 module Errors2Html
-  VERSION = '1.4.1'
+  VERSION = '1.4.2'
 
   def Errors2Html.version
     Errors2Html::VERSION
@@ -46,11 +46,12 @@ module Errors2Html
       flatten(e).each do |key, messages|
         Array(messages).each do |message|
           at_least_one_error = true
+          message = message.to_s.html_safe
 
           if Array(key).join =~ /\A(?:[*]|base)\Z/iomx
-            errors.global.push(message.to_s).uniq!
+            errors.global.push(message).uniq!
           else
-            (errors.fields[key] ||= []).push(message.to_s).uniq!
+            (errors.fields[key] ||= []).push(message).uniq!
           end
         end
       end
