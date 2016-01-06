@@ -1,5 +1,5 @@
 module Errors2Html
-  VERSION = '1.4.2'
+  VERSION = '1.5.0'
 
   def Errors2Html.version
     Errors2Html::VERSION
@@ -66,9 +66,9 @@ module Errors2Html
     }
 
     if template
-      View.render(:template => template, :locals => locals)
+      View.render(:template => template, :locals => locals, :layout => false)
     else
-      View.render(:inline => inline, :locals => locals)
+      View.render(:inline => inline, :locals => locals, :layout => false)
     end
   end
 
