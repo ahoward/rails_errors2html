@@ -7,7 +7,7 @@ NAME
 DESCRIPTION
 --------------------------------
 
-  sane html rendering of active_model errors 
+  tiny, KISS html rendering of active_model errors 
 
 --------------------------------
 SYNOPSIS

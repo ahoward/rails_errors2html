@@ -1,28 +1,6 @@
 module Errors2Html
-  VERSION = '1.5.0'
-
-  def Errors2Html.version
-    Errors2Html::VERSION
-  end
-
-  def Errors2Html.dependencies
-    {
-      'fattr'      => [ 'fattr'         , ' >= 2.2.1' ],
-      'map'        => [ 'map'           , ' >= 6.2.0' ],
-      'rails_view' => [ 'rails_view'    , ' >= 1.0.1' ]
-    }
-  end
-    
-  begin
-    require 'rubygems'
-  rescue LoadError
-    nil
-  end
-
-  Errors2Html.dependencies.each do |lib, dependency|
-    gem(*dependency) if defined?(gem)
-    require(lib)
-  end
+  require_relative './lib/errors2html/_lib.rb'
+  Errors2Html.load_dependencies!
 
   def Errors2Html.to_html(*args)
     if args.size == 1
